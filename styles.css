@@ -1,0 +1,27 @@
+.squareButton {
+  font-family: Calibri,Candara,Segoe,Segoe UI,Optima,Arial,sans-serif;
+  background: #cde6f7;
+  border: 1px solid #92c0e0;    
+  float: left;
+  font-size: 14px;
+  font-weight: normal;
+  line-height: 34px;
+  margin-right: 4px;
+  margin-top: 4px;
+  padding: 2px 5px 4px 2px;
+  text-align: center;
+  color: black;
+  width: 150px;
+  white-space: normal;
+}
+
+.squareButton:hover
+{
+  background: #0173c7;
+  border: 1px solid #0173c7;
+  color: white; 
+}
+
+.buttonBoard
+{
+}
