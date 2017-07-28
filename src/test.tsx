@@ -35,9 +35,17 @@ class Template {
     }
 }
 
-let rgTemplates = new Array<Template>(2);
-rgTemplates[0] = new Template("Hi Mom", "Foobar");
+let rgTemplates = new Array<Template>(10);
+rgTemplates[0] = new Template("Sup Homies", "Foobar");
 rgTemplates[1] = new Template("I'll Be Late", "I am running late and can't make it");
+rgTemplates[2] = new Template("Sup Homies", "Foobar");
+rgTemplates[3] = new Template("I'll Be Late", "I am running late and can't make it");
+rgTemplates[4] = new Template("Sup Homies", "Foobar");
+rgTemplates[5] = new Template("I'll Be Late", "I am running late and can't make it");
+rgTemplates[6] = new Template("Sup Homies", "Foobar");
+rgTemplates[7] = new Template("I'll Be Late", "I am running late and can't make it");
+rgTemplates[8] = new Template("Sup Homies", "Foobar");
+rgTemplates[9] = new Template("I'll Be Late", "I am running late and can't make it");
 
 let myInfo : Info = new Info();
 
@@ -65,19 +73,9 @@ class SquareButton extends React.Component<SquareButtonProps, undefined > {
 export interface ButtonBoardProps {buttons: Array<Template>}
 class ButtonBoard extends React.Component<ButtonBoardProps, undefined> {
     render() {
-        /*
-        var components = this.props.buttons.map(function(button){
-            return (<SquareButton value={button.Title()} />);
-        })
-        */
         return (
-            <div>{this.props.buttons.map(button  => <div><SquareButton value={button.Title} /></div>)}</div>
+            <div className="buttonBoard">{this.props.buttons.map(button  => <SquareButton value={button.Title} />)}</div>
         )
-        /*
-        return (
-                <div><SquareButton value="Hello" /><SquareButton value="hi mom" /></div>
-        )
-            */
     }
 }
 
