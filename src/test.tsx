@@ -35,23 +35,64 @@ class Template {
     }
 }
 
-let rgTemplates = new Array<Template>(10);
-rgTemplates[0] = new Template("Sup Homies", "Foobar");
-rgTemplates[1] = new Template("I'll Be Late", "I am running late and can't make it");
-rgTemplates[2] = new Template("Sup Homies", "Foobar");
-rgTemplates[3] = new Template("I'll Be Late", "I am running late and can't make it");
-rgTemplates[4] = new Template("Sup Homies", "Foobar");
-rgTemplates[5] = new Template("I'll Be Late", "I am running late and can't make it");
-rgTemplates[6] = new Template("Sup Homies", "Foobar");
-rgTemplates[7] = new Template("I'll Be Late", "I am running late and can't make it");
-rgTemplates[8] = new Template("Sup Homies", "Foobar");
-rgTemplates[9] = new Template("I'll Be Late", "I am running late and can't make it");
+class Templates {
+    @observable private _rgTemplates:Array<Template>;
+
+    @computed public get Data(): Array<Template>{return this._rgTemplates}
+
+    @action
+    public updateTemplates(inTemplates:Array<Template>) : void {
+        this._rgTemplates = inTemplates;
+    }
+}
+let rgTemplates = new Array<Template>(0);
+rgTemplates.push(new Template("DebugTim", "Debug"));
+let myTemplates : Templates = new Templates;
+
+myTemplates.updateTemplates(rgTemplates);
 
 let myInfo : Info = new Info();
 
-Office.initialize = () => {
-    myInfo.updateName((Office.context.mailbox.item as Office.MessageRead).subject);
+function UpdateTemplates()
+{
+    var savedSettings = Office.context.roamingSettings.get("temp"); 
+
+   if ( savedSettings == undefined)
+        {
+            let tempTemplates = new Array<Template>(0);
+            tempTemplates.push(new Template("Default 2", "Edit Me"));
+            tempTemplates.push(new Template("Default 1", "Edit Me"));
+            myTemplates.updateTemplates(tempTemplates);
+        }
+    else
+        {
+
+
+        }
 }
+
+function LoadTemplatesFromString()
+{
+    var stringIn = "[{\"_title\":\"LoadedFromDisk22\", \"_body\":\"Body\"}, {\"_title\":\"LoadedFromDisk\", \"_body\":\"Body\"}]";
+    let jsonTemplates = JSON.parse(stringIn);
+    let tempTemplates : Array<Template> = new Array<Template>(0);
+    
+    for (let i : number = 0; i < jsonTemplates.length; i++)
+        {
+            tempTemplates.push(new Template(jsonTemplates[i]._title, jsonTemplates[i]._body));
+
+        }
+    myTemplates.updateTemplates(tempTemplates);
+}
+
+LoadTemplatesFromString();
+
+Office.initialize = () => {
+    //myInfo.updateName((Office.context.mailbox.item as Office.MessageRead).subject);
+    UpdateTemplates();
+}
+
+//setTimeout(UpdateTemplates, 1000);
 
 @observer
 class HelloWorld extends React.Component<{}, {}> {
@@ -71,6 +112,7 @@ class SquareButton extends React.Component<SquareButtonProps, undefined > {
 }
 
 export interface ButtonBoardProps {buttons: Array<Template>}
+@observer
 class ButtonBoard extends React.Component<ButtonBoardProps, undefined> {
     render() {
         return (
@@ -79,8 +121,24 @@ class ButtonBoard extends React.Component<ButtonBoardProps, undefined> {
     }
 }
 
+@observer
+class ButtonBoard2 extends React.Component<{}, {}> {
+    render() {
+        return (
+            <div className="buttonBoard">{myTemplates.Data.map(button  => <SquareButton value={button.Title} />)}</div>
+        )
+    }
+}
+
+
 ReactDOM.render(
-    (<ButtonBoard buttons={rgTemplates} />),
+    (<ButtonBoard2  />),
+        document.getElementById("app")
+);
+
+/*
+ReactDOM.render(
+    (<ButtonBoard buttons={myTemplates.Data} />),
         document.getElementById("app")
 );
 
