@@ -1,0 +1,177 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<OfficeApp
+  xmlns="http://schemas.microsoft.com/office/appforoffice/1.1"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xmlns:bt="http://schemas.microsoft.com/office/officeappbasictypes/1.0"
+  xmlns:mailappor="http://schemas.microsoft.com/office/mailappversionoverrides"
+  xsi:type="MailApp">
+  <Id>{11111111-DEAD-BEEF-9999-2222F968ABCD}</Id>		<!-- TODO: Change this to be something unique -->
+  <Version>1.0</Version>
+  <ProviderName>Microsoft</ProviderName>
+  <DefaultLocale>en-us</DefaultLocale>
+  <DisplayName DefaultValue="Hack Reply"></DisplayName>
+  <Description DefaultValue="Tim Wan's Hack Reply">
+   </Description>   
+  <IconUrl DefaultValue="https://outlmoe/icons/elmo.bmp" >
+  </IconUrl>
+  <HighResolutionIconUrl DefaultValue="https://outlmoe/icons/elmo.bmp" >
+  </HighResolutionIconUrl>
+  <AppDomains>
+   <AppDomain>https://outlmoe/</AppDomain>
+   <AppDomain>https://featuretest.azurewebsites.net/</AppDomain>
+  </AppDomains>
+
+  <Requirements>
+    <Sets DefaultMinVersion="1.1">
+      <Set Name="Mailbox" />
+    </Sets>
+  </Requirements>
+
+	<!-- I believe the stuff below does nothing, in Office 16 since version overrides should supercede this-->
+
+  <FormSettings>
+    <Form xsi:type="ItemRead">
+      <DesktopSettings>
+        <SourceLocation DefaultValue="https://outlmoe/bugbash/apis/AgaveAPIs.html" >
+        </SourceLocation>
+        <RequestedHeight>150</RequestedHeight>
+      </DesktopSettings>
+    </Form>
+    <Form xsi:type="ItemEdit">
+      <DesktopSettings>
+        <SourceLocation DefaultValue="https://outlmoe/bugbash/apis/AgaveAPIs.html" >
+        </SourceLocation>
+      </DesktopSettings>
+    </Form>
+  </FormSettings>
+  <Permissions>ReadWriteMailbox</Permissions>
+  <Rule xsi:type="RuleCollection" Mode="Or">
+    <Rule xsi:type="ItemIs" ItemType="Message" FormType="Edit" />
+    <Rule xsi:type="ItemIs" ItemType="Appointment" FormType="Edit" />
+  </Rule>
+  <DisableEntityHighlighting>true</DisableEntityHighlighting>
+
+
+<VersionOverrides xmlns="http://schemas.microsoft.com/office/mailappversionoverrides" xsi:type="VersionOverridesV1_0">
+
+  <Description resid="residDescription" />
+
+  <Requirements>
+    <bt:Sets DefaultMinVersion="1.3">
+      <bt:Set Name="Mailbox" />
+    </bt:Sets>
+  </Requirements>
+
+  <Hosts>
+    <Host xsi:type="MailHost">
+
+      <DesktopFormFactor>
+        <FunctionFile resid="residDesktopFuncUrl" />
+        
+      <ExtensionPoint xsi:type="MessageComposeCommandSurface">	<!-- MessageComposeCommandSurface --> 
+          <OfficeTab id="TabDefault">
+            <Group id="msgTabMailCompose.1">
+              <Label resid="residMailCompose" />
+              <Tooltip resid="residAppointmentOrganizerTip" />
+ 
+              <Control xsi:type="Button" id="button1MailCompose">
+                <Label resid="residTakspane1" />
+                <Tooltip resid="residTooltip" />
+                <Supertip>
+                  <Title resid="residSuperTipTitle" />
+                  <Description resid="residDescription" />
+                </Supertip>
+                <Icon>
+                  <bt:Image size="16" resid="icon5" />			
+                  <bt:Image size="32" resid="icon5" />
+                  <bt:Image size="80" resid="icon5" />
+                </Icon>
+	                <Action xsi:type="ShowTaskpane">
+	                  <SourceLocation resid="residTaskpaneUrl" />
+	                </Action>
+              </Control>              
+            </Group>
+          </OfficeTab>
+        </ExtensionPoint>
+
+      <ExtensionPoint xsi:type="MessageReadCommandSurface">	<!-- MessageReadCommandSurface --> 
+          <OfficeTab id="TabDefault">
+            <Group id="msgTabMailRead.1">
+              <Label resid="residMailRead" />
+              <Tooltip resid="residAppointmentOrganizerTip" />
+ 
+              <Control xsi:type="Button" id="button1MailRead">
+                <Label resid="residTakspane1" />
+                <Tooltip resid="residTooltip" />
+                <Supertip>
+                  <Title resid="residSuperTipTitle" />
+                  <Description resid="residDescription" />
+                </Supertip>
+                <Icon>
+                  <bt:Image size="16" resid="icon1" />			
+                  <bt:Image size="32" resid="icon1" />
+                  <bt:Image size="80" resid="icon1" />
+                </Icon>
+	                <Action xsi:type="ShowTaskpane">
+	                  <SourceLocation resid="residTaskpaneUrl" />
+	                </Action>
+              </Control>              
+            </Group>
+          </OfficeTab>
+        </ExtensionPoint>        
+      </DesktopFormFactor>
+    </Host>
+  </Hosts>
+
+  <Resources>
+    <bt:Images>
+      <bt:Image id="icon1" DefaultValue="https://outlmoe/icons/daniel.png" ></bt:Image>
+      <bt:Image id="icon2" DefaultValue="https://outlmoe/icons/owl.png" ></bt:Image>
+      <bt:Image id="icon3" DefaultValue="https://outlmoe/icons/kitty.png"></bt:Image>
+      <bt:Image id="icon4" DefaultValue="https://outlmoe/icons/prince.png" ></bt:Image>
+      <bt:Image id="icon5" DefaultValue="https://outlmoe/icons/trolley.png" ></bt:Image>
+      <bt:Image id="icon6" DefaultValue="https://outlmoe/icons/elania.png"></bt:Image>
+      <bt:Image id="icon7" DefaultValue="https://outlmoe/icons/batman.png" ></bt:Image>
+      <bt:Image id="icon8" DefaultValue="https://outlmoe/icons/superman.png"></bt:Image>
+
+    </bt:Images>
+    
+    <bt:Urls>
+      <bt:Url id="residDesktopFuncUrl" DefaultValue="https://outlmoe/timwan/hackreply2/" ></bt:Url>		<!-- TODO: Copy the extension to someplace else, and replace the url with this -->
+      <bt:Url id="residTaskpaneUrl" DefaultValue="https://outlmoe/timwan/hackreply2/" ></bt:Url>		<!-- TODO: Copy the extension to someplace else, and replace the url with this -->
+	  <bt:Url id="residAgaveAPIUrl" DefaultValue="https://outlmoe/timwan/hackreply2/"></bt:Url>		<!-- TODO: Copy the extension to someplace else, and replace the url with this -->
+    </bt:Urls>
+    <bt:ShortStrings>
+      <bt:String id="residAppointmentAttendee" DefaultValue="BugBash Appt Attendee"></bt:String>
+      <bt:String id="residAppointmentOrganizer" DefaultValue="BugBash Appt Organizer"></bt:String>
+      <bt:String id="residMailRead" DefaultValue="Hack Reply R"></bt:String>
+      <bt:String id="residMailCompose" DefaultValue="Hack Reply C"></bt:String>
+      
+      <bt:String id="residAppointmentOrganizerTip" DefaultValue="Tooltip"></bt:String>
+      <bt:String id="residTakspane1" DefaultValue="Taskpane 1"></bt:String>
+      <bt:String id="residTakspane2" DefaultValue="Taskpane 2"></bt:String>
+      <bt:String id="residUILess1" DefaultValue="UILess 1"></bt:String>
+      <bt:String id="residUILess2" DefaultValue="UILess 2"></bt:String>
+
+    
+      <bt:String id="residTemplateManagementCompose" DefaultValue="appointment compose"></bt:String>
+      <bt:String id="msgreadTabMessageCompose.grp1" DefaultValue="appointment read"></bt:String>
+      <bt:String id="residTemplateManagement" DefaultValue="BB 1.0"></bt:String>
+      <bt:String id="residUILessButton1" DefaultValue="Bug Bash 15 Read 1"></bt:String>
+      <bt:String id="residUILessButton2" DefaultValue="BugBash Read 2"></bt:String>
+      
+      <bt:String id="residTaskpaneButton" DefaultValue="Taskpane 15"></bt:String>
+      <bt:String id="residTaskpaneButtonCompose" DefaultValue="Compose 15"></bt:String>
+      <bt:String id="residAPIButton" DefaultValue="APIs"></bt:String>
+      <bt:String id="residSuperTipTitle" DefaultValue="SuperTip Title"></bt:String>
+    </bt:ShortStrings>
+    <bt:LongStrings>
+      <bt:String id="residDescription" DefaultValue="Testing App For App Commands"></bt:String>
+      <bt:String id="residTemplateManagementTip" DefaultValue="Test App With both a UILess and Taskpane Command"></bt:String>
+      <bt:String id="residTooltip" DefaultValue="Run Test app"></bt:String>
+      <bt:String id="residDescription" DefaultValue="Run Test App"></bt:String>
+    </bt:LongStrings>
+  </Resources>
+
+</VersionOverrides>
+</OfficeApp>
