@@ -28,6 +28,7 @@ class Template {
     }
 
     @computed public get Title():string {return this._title;}
+    @computed public get Body():string {return this._body;}
     @computed public get Id():number {return this._id;}
     @action updateTitle(inTitle:string) : void {
         this._title = inTitle;
@@ -66,11 +67,32 @@ class Templates {
     }
 
     @action
-    public changeTemplate(inButtonName:string) : void {
+    public changeTemplate(inButtonId:number) : void {
         for (let i = 0; i < this._rgTemplates.length; i++ ) {
-            if (this._rgTemplates[i].Title == inButtonName)
-            this._rgTemplates[i].updateTitle("hi mom");
+            if (this._rgTemplates[i].Id == inButtonId)
+            this._rgTemplates[i].updateTitle("clicked");
         }
+    }
+
+    @action
+    public dumpJson() : string {
+        class tempTemplates{
+            Title:string;
+            Body:string;
+        };
+
+        let myStructure : Array<tempTemplates> = new Array<tempTemplates>(0);
+
+        for (let entry of this._rgTemplates )
+        {
+            let myEntry : tempTemplates = new tempTemplates;
+            myEntry.Title = entry.Title;
+            myEntry.Body = entry.Body;
+            
+            myStructure.push(myEntry);
+        }
+
+        return JSON.stringify(myStructure);
     }
 }
 
@@ -88,8 +110,8 @@ function UpdateTemplates()
    if ( savedSettings == undefined)
         {
             let tempTemplates = new Templates;
-            tempTemplates.addTemplate("Default 2", "Edit Me");
-            tempTemplates.addTemplate("Default 1", "Edit Me");
+            tempTemplates.addTemplate("Default 2", "This is the <b>second</b> button.");
+            tempTemplates.addTemplate("Default 1", "Body Text 1");
             myTemplates.updateTemplates(tempTemplates);
         }
     else
@@ -99,9 +121,8 @@ function UpdateTemplates()
         }
 }
 
-function LoadTemplatesFromString()
+function LoadTemplatesFromString(stringIn:string)
 {
-    var stringIn = "[{\"_title\":\"LoadedFromDisk22\", \"_body\":\"Body\"}, {\"_title\":\"LoadedFromDisk\", \"_body\":\"Body\"}]";
     let jsonTemplates = JSON.parse(stringIn);
     let tempTemplates : Templates = new Templates;
     
@@ -112,7 +133,7 @@ function LoadTemplatesFromString()
     myTemplates.updateTemplates(tempTemplates);
 }
 
-LoadTemplatesFromString();
+LoadTemplatesFromString("[{\"Title\":\"LoadedFromDisk22\", \"Body\":\"Body\"}, {\"Title\":\"LoadedFromDisk\", \"Body\":\"Body\"}]");
 
 Office.initialize = () => {
     //myInfo.updateName((Office.context.mailbox.item as Office.MessageRead).subject);
@@ -136,6 +157,25 @@ class SquareButton extends React.Component<SquareButtonProps, undefined > {
         )
     }
 }
+
+export interface Checkbox2Props {checked:boolean, text:string}
+class Checkbox2 extends React.Component<Checkbox2Props, undefined>
+{
+    render() {
+        let buttonString:string = " ";
+        if (this.props.checked)
+        {
+            buttonString = "x";
+        }
+        return (
+            <div className="checkBoxContainer">
+             <button className="checkBox">{buttonString}</button>
+                {this.props.text}
+            </div>
+        )
+    }
+}
+
 /*
 export interface ButtonBoardProps {buttons: Array<Template>}
 @observer
@@ -154,11 +194,26 @@ class ButtonBoard2 extends React.Component<{}, {}> {
     handleClick(button:Template) {
         // window.open("https://www.yahoo.com/"); // TODO: Remove        
         // myTemplates.changeTemplate("Default 2");
+        myTemplates.changeTemplate(button.Id);
+        console.log(myTemplates.dumpJson());
+    //myInfo.updateName((Office.context.mailbox.item as Office.MessageRead).subject);
+        (Office.context.mailbox.item as Office.MessageRead).displayReplyForm(button.Body)
+    }
+
+    renderCheckbox(buttonText:string, checked:boolean){
+        return <Checkbox2 checked={checked} text={buttonText}></Checkbox2>;
     }
 
     render() {
+
         return (
-            <div className="buttonBoard">{myTemplates.Data.map(button  => <SquareButton onClick={() => this.handleClick(button)} value={button.Title} />)}</div>
+        <div className="buttonBoard"><div>{myTemplates.Data.map(button  => {
+            var myString = button.Title + ":" + button.Id;
+            return <SquareButton onClick={() => this.handleClick(button)} value={myString} />
+        })}</div>
+        <div>{this.renderCheckbox("Reply All", true)}</div> 
+        </div>
+        
         )
     }
 }

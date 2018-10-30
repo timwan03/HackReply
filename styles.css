@@ -1,7 +1,8 @@
 .squareButton {
   font-family: Calibri,Candara,Segoe,Segoe UI,Optima,Arial,sans-serif;
-  background: #cde6f7;
-  border: 1px solid #92c0e0;    
+  background: #0173c7;
+  border: 1px solid #0173c7;
+  color: white; 
   float: left;
   font-size: 14px;
   font-weight: normal;
@@ -10,18 +11,44 @@
   margin-top: 4px;
   padding: 2px 5px 4px 2px;
   text-align: center;
-  color: black;
   width: 150px;
   white-space: normal;
 }
 
 .squareButton:hover
 {
-  background: #0173c7;
-  border: 1px solid #0173c7;
-  color: white; 
+  background: #cde6f7;
+  border: 1px solid #92c0e0;  
+  color: black; 
 }
 
 .buttonBoard
 {
+}
+
+.checkBoxContainer {
+  font-family: Calibri,Candara,Segoe,Segoe UI,Optima,Arial,sans-serif;
+  font-size: 14px;
+  font-weight: normal;
+  color:black;
+  padding: 10px 20px 2px 2px;
+  clear: both;
+  content: "";
+  display: table;
+
+}
+
+.checkBox {
+  background: #fff;
+  border: 1px solid #999;
+  float: left;
+  font-size: 20px;
+  font-weight: bold;
+  line-height: 1px;
+  height: 20px;
+  margin-right: 5px;
+  margin-top: -1px;
+  padding: 0px 0px 2px 0px;
+  text-align: center;
+  width: 20px;
 }
