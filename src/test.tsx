@@ -67,10 +67,15 @@ class Templates {
     }
 
     @action
-    public changeTemplate(inButtonId:number) : void {
+    public changeTemplate(inButtonId:number, inTitle:string, inBody:string) : void {
         for (let i = 0; i < this._rgTemplates.length; i++ ) {
             if (this._rgTemplates[i].Id == inButtonId)
-            this._rgTemplates[i].updateTitle("clicked");
+            {
+                if (inTitle)
+                    this._rgTemplates[i].updateTitle(inTitle);
+                if (inBody)
+                    this._rgTemplates[i].updateBody(inBody);
+            }
         }
     }
 
@@ -128,7 +133,7 @@ function LoadTemplatesFromString(stringIn:string)
     
     for (let i : number = 0; i < jsonTemplates.length; i++)
         {
-            tempTemplates.addTemplate(jsonTemplates[i]._title, jsonTemplates[i]._body);
+            tempTemplates.addTemplate(jsonTemplates[i].Title, jsonTemplates[i].Body);
         }
     myTemplates.updateTemplates(tempTemplates);
 }
@@ -256,28 +261,79 @@ class ButtonBoard2 extends React.Component<ButtonBoard2Props, undefined> {
     }
 }
 
-export interface EditTemplateFormProps {newTemplate:boolean}
+export interface EditTemplateState {body:string, title:string};
+export interface EditTemplateFormProps {templateToEdit: Template; newTemplate:boolean; parentPageManager:PageManager;}
 @observer
-class EditTemplateForm extends React.Component<EditTemplateFormProps, undefined>
+class EditTemplateForm extends React.Component<EditTemplateFormProps, EditTemplateState>
 {
+    constructor(props:EditTemplateFormProps) {
+        super(props);
+        this.state = {
+          body: this.props.templateToEdit.Body,
+          title: this.props.templateToEdit.Title
+        };
+        
+        this.handleChange = this.handleChange.bind(this);
+        this.handleSubmit = this.handleSubmit.bind(this);
+      }
 
+      handleChange(event:any) {
+        const target = event.target;
+        //var value = target === 
+        if (target.name === "body") {
+            this.setState({body: target.value as string});
+        }
+        else {
+
+
+            this.setState({title: target.value as string});
+        }
+      }
+    
+      handleSubmit(event:any) {
+        let newTitle:string = this.state.title.trim();
+        if (newTitle.length == 0)
+            newTitle = "<empty title>";
+        //alert('A name was submitted: ' + this.state.value);
+        myTemplates.changeTemplate(this.props.templateToEdit.Id, newTitle, this.state.body)
+        event.preventDefault();
+        this.props.parentPageManager.backToMain();
+      }
+
+    render()
+    {
+        return  <form onSubmit={this.handleSubmit}>
+                    <input name="title" value={this.state.title} onChange={this.handleChange}></input>
+                    <textarea name="body" value={this.state.body} onChange={this.handleChange} />
+                    <input type="submit" value="Submit" />
+                </form>
+    }
 }
 
 @observer
 class PageManager extends React.Component<{}, {}>
 {
     @observable _fDisplayEdit : boolean = false;
+    @observable _templateToEdit : Template;
 
     handleEditClick(button:Template)
     {
         this._fDisplayEdit = true;
+        this._templateToEdit = button;
     }
+
+    backToMain()
+    {
+        this._fDisplayEdit = false;
+        this._templateToEdit = null;
+    }
+
     render()
     {
         if (this._fDisplayEdit)
         {
             return (
-                <div>hello world</div>
+                <EditTemplateForm parentPageManager={this} templateToEdit={this._templateToEdit} newTemplate={false} />
             )
 
         }
