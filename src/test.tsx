@@ -110,7 +110,7 @@ function UpdateTemplates()
    if ( savedSettings == undefined)
         {
             let tempTemplates = new Templates;
-            tempTemplates.addTemplate("Default 2", "This is the <b>second</b> button.");
+            tempTemplates.addTemplate("Default 2 dasdfasf asdf asdf asdas fas fasd ", "This is the <b>second</b> button.");
             tempTemplates.addTemplate("Default 1", "Body Text 1");
             myTemplates.updateTemplates(tempTemplates);
         }
@@ -149,12 +149,15 @@ class HelloWorld extends React.Component<{}, {}> {
     }
 }
 
-export interface SquareButtonProps { value: string; onClick: any;}
+export interface SquareButtonProps { value: string; onClick: any; onClickEdit: any;}
 class SquareButton extends React.Component<SquareButtonProps, undefined > {
     render() {
         return(
-            <button className="squareButton" onClick={this.props.onClick}>{this.props.value}</button>
-        )
+            <div>
+                <button className="templateButton" onClick={this.props.onClick}>{this.props.value}</button>
+                <button className="editButton" onClick={this.props.onClickEdit}><img src = "icons/edit.png"></img></button>
+            </div>
+        );
     }
 }
 
@@ -188,8 +191,9 @@ class ButtonBoard extends React.Component<ButtonBoardProps, undefined> {
 }
 */
 
+export interface ButtonBoard2Props {inPageManager:PageManager;}
 @observer
-class ButtonBoard2 extends React.Component<{}, {}> {
+class ButtonBoard2 extends React.Component<ButtonBoard2Props, undefined> {
     @observable _isReplyAll:boolean;
     @observable _editResponse:boolean
     constructor()
@@ -221,6 +225,10 @@ class ButtonBoard2 extends React.Component<{}, {}> {
 
     }
 
+    handleEditTemplateClick(button:Template) {
+        this.props.inPageManager.handleEditClick(button);
+    }
+
     handleReplyAllClick()
     {
         this._isReplyAll = !this._isReplyAll;
@@ -236,11 +244,10 @@ class ButtonBoard2 extends React.Component<{}, {}> {
     }
 
     render() {
-
         return (
         <div className="buttonBoard"><div>{myTemplates.Data.map(button  => {
             var myString = button.Title + ":" + button.Id;
-            return <SquareButton onClick={() => this.handleClick(button)} value={myString} />
+            return <SquareButton onClick={() => this.handleClick(button)} value={myString} onClickEdit={() => this.handleEditTemplateClick(button)} />
         })}</div>
         <div>{this.renderCheckbox("Reply All", this._isReplyAll, () => this.handleReplyAllClick())}</div>
         <div>{this.renderCheckbox("Edit Response", this._editResponse, () => this.handleEditResponseClick()) }</div> 
@@ -249,9 +256,39 @@ class ButtonBoard2 extends React.Component<{}, {}> {
     }
 }
 
+export interface EditTemplateFormProps {newTemplate:boolean}
+@observer
+class EditTemplateForm extends React.Component<EditTemplateFormProps, undefined>
+{
 
+}
+
+@observer
+class PageManager extends React.Component<{}, {}>
+{
+    @observable _fDisplayEdit : boolean = false;
+
+    handleEditClick(button:Template)
+    {
+        this._fDisplayEdit = true;
+    }
+    render()
+    {
+        if (this._fDisplayEdit)
+        {
+            return (
+                <div>hello world</div>
+            )
+
+        }
+
+        return(
+            <ButtonBoard2 inPageManager={this}/>
+        )
+    }
+}
 ReactDOM.render(
-    (<ButtonBoard2  />),
+    (<PageManager  />),
         document.getElementById("app")
 );
 

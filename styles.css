@@ -1,4 +1,4 @@
-.squareButton {
+.templateButton {
   font-family: Calibri,Candara,Segoe,Segoe UI,Optima,Arial,sans-serif;
   background: #0173c7;
   border: 1px solid #0173c7;
@@ -12,14 +12,24 @@
   padding: 2px 5px 4px 2px;
   text-align: center;
   width: 150px;
+  height: 42px;
   white-space: normal;
 }
 
-.squareButton:hover
+.templateButton:hover
 {
   background: #cde6f7;
   border: 1px solid #92c0e0;  
   color: black; 
+}
+
+.editButton {
+  background: blue;
+  border: 1px solid red;
+  color: white;
+  float: left;
+  width: 20px;
+  height: 42px;
 }
 
 .buttonBoard
