@@ -158,7 +158,7 @@ class SquareButton extends React.Component<SquareButtonProps, undefined > {
     }
 }
 
-export interface Checkbox2Props {checked:boolean, text:string}
+export interface Checkbox2Props {checked:boolean, text:string, onClick: any;}
 class Checkbox2 extends React.Component<Checkbox2Props, undefined>
 {
     render() {
@@ -169,7 +169,7 @@ class Checkbox2 extends React.Component<Checkbox2Props, undefined>
         }
         return (
             <div className="checkBoxContainer">
-             <button className="checkBox">{buttonString}</button>
+             <button className="checkBox" onClick={this.props.onClick}>{buttonString}</button>
                 {this.props.text}
             </div>
         )
@@ -190,18 +190,30 @@ class ButtonBoard extends React.Component<ButtonBoardProps, undefined> {
 
 @observer
 class ButtonBoard2 extends React.Component<{}, {}> {
+    @observable _isReplyAll:boolean;
+
+    constructor()
+    {
+        super();
+        this._isReplyAll = false;
+    }
 
     handleClick(button:Template) {
-        // window.open("https://www.yahoo.com/"); // TODO: Remove        
-        // myTemplates.changeTemplate("Default 2");
-        myTemplates.changeTemplate(button.Id);
+        //myTemplates.changeTemplate(button.Id);
         console.log(myTemplates.dumpJson());
-    //myInfo.updateName((Office.context.mailbox.item as Office.MessageRead).subject);
-        (Office.context.mailbox.item as Office.MessageRead).displayReplyForm(button.Body)
+        if (this._isReplyAll)
+            (Office.context.mailbox.item as Office.MessageRead).displayReplyAllForm(button.Body)
+        else
+            (Office.context.mailbox.item as Office.MessageRead).displayReplyForm(button.Body)
+    }
+
+    handleReplyAllClick()
+    {
+        this._isReplyAll = !this._isReplyAll;
     }
 
     renderCheckbox(buttonText:string, checked:boolean){
-        return <Checkbox2 checked={checked} text={buttonText}></Checkbox2>;
+        return <Checkbox2 onClick={() => this.handleReplyAllClick()}checked={checked} text={buttonText}></Checkbox2>;
     }
 
     render() {
@@ -211,7 +223,7 @@ class ButtonBoard2 extends React.Component<{}, {}> {
             var myString = button.Title + ":" + button.Id;
             return <SquareButton onClick={() => this.handleClick(button)} value={myString} />
         })}</div>
-        <div>{this.renderCheckbox("Reply All", true)}</div> 
+        <div>{this.renderCheckbox("Reply All", this._isReplyAll)}</div> 
         </div>
         
         )
