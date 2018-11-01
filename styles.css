@@ -7,7 +7,7 @@
   font-size: 14px;
   font-weight: normal;
   line-height: 34px;
-  margin-right: 4px;
+  margin-right: 1px;
   margin-top: 4px;
   padding: 2px 5px 4px 2px;
   text-align: center;
@@ -24,12 +24,68 @@
 }
 
 .editButton {
-  background: blue;
-  border: 1px solid red;
-  color: white;
+  background: #0173c7;
+  border: 1px solid #0173c7;
   float: left;
-  width: 20px;
+  margin-top:4px;
+  margin-right: 4px;
+  margin-left: 0px;
+  padding: 0px 0px 0px 1px;
   height: 42px;
+  width: 21px;
+}
+
+.editButton:hover {
+  background: #cde6f7;
+  border: 1px solid #92c0e0;
+  float: left;
+}
+
+.editTemplateTitle 
+{
+	border: 1px solid #0173c7;
+	height: 25px;
+	width: 98%;
+	font-family: Calibri,Candara,Segoe,Segoe UI,Optima,Arial,sans-serif;
+	font-size: 14px;
+	padding: 2px;
+	margin-bottom: 4px;
+	margin-right: 15px;
+}
+
+.editTemplateBody
+{
+	width: 98%;
+	margin-right: 15px;
+	border: 1px solid #0173c7;
+	height: 100px;
+	font-family: Calibri,Candara,Segoe,Segoe UI,Optima,Arial,sans-serif;
+	font-size: 14px;
+}
+
+.editTemplateButton {
+  font-family: Calibri,Candara,Segoe,Segoe UI,Optima,Arial,sans-serif;
+  background: #0173c7;
+  border: 1px solid #0173c7;
+  color: white; 
+  float: left;
+  font-size: 14px;
+  font-weight: normal;
+  line-height: 34px;
+  margin-right: 4px;
+  margin-top: 4px;
+  padding: 2px 5px 4px 2px;
+  text-align: center;
+  width: 100px;
+  height: 42px;
+  white-space: normal;
+}
+
+.editTemplateButton:hover
+{
+  background: #cde6f7;
+  border: 1px solid #92c0e0;  
+  color: black; 
 }
 
 .buttonBoard

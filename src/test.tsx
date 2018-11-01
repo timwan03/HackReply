@@ -115,7 +115,7 @@ function UpdateTemplates()
    if ( savedSettings == undefined)
         {
             let tempTemplates = new Templates;
-            tempTemplates.addTemplate("Default 2 dasdfasf asdf asdf asdas fas fasd ", "This is the <b>second</b> button.");
+            tempTemplates.addTemplate("Default 2", "This is the <b>second</b> button.");
             tempTemplates.addTemplate("Default 1", "Body Text 1");
             myTemplates.updateTemplates(tempTemplates);
         }
@@ -275,6 +275,7 @@ class EditTemplateForm extends React.Component<EditTemplateFormProps, EditTempla
         
         this.handleChange = this.handleChange.bind(this);
         this.handleSubmit = this.handleSubmit.bind(this);
+        this.handleDiscard = this.handleDiscard.bind(this);
       }
 
       handleChange(event:any) {
@@ -284,28 +285,38 @@ class EditTemplateForm extends React.Component<EditTemplateFormProps, EditTempla
             this.setState({body: target.value as string});
         }
         else {
-
-
             this.setState({title: target.value as string});
         }
       }
     
       handleSubmit(event:any) {
-        let newTitle:string = this.state.title.trim();
-        if (newTitle.length == 0)
-            newTitle = "<empty title>";
-        //alert('A name was submitted: ' + this.state.value);
-        myTemplates.changeTemplate(this.props.templateToEdit.Id, newTitle, this.state.body)
+        if (event.target.name != "discard") {
+            let newTitle:string = this.state.title.trim();
+            if (newTitle.length == 0)
+                newTitle = "<empty title>";
+            //alert('A name was submitted: ' + this.state.value);
+            myTemplates.changeTemplate(this.props.templateToEdit.Id, newTitle, this.state.body)
+        }
         event.preventDefault();
         this.props.parentPageManager.backToMain();
+      }
+
+      handleDiscard() {
+          this.setState({
+              body: this.props.templateToEdit.Body,
+              title: this.props.templateToEdit.Title
+          });
       }
 
     render()
     {
         return  <form onSubmit={this.handleSubmit}>
-                    <input name="title" value={this.state.title} onChange={this.handleChange}></input>
-                    <textarea name="body" value={this.state.body} onChange={this.handleChange} />
-                    <input type="submit" value="Submit" />
+                    <div><input className="editTemplateTitle" maxLength={20} name="title" value={this.state.title} onChange={this.handleChange}></input></div>
+                    <div><textarea className="editTemplateBody" name="body" value={this.state.body} onChange={this.handleChange} /></div>
+                    <div>
+                        <input className="editTemplateButton" type="submit" value="Save" />
+                        <input className="editTemplateButton" onClick={this.handleDiscard} type="submit" name="discard" value="Discard" />
+                    </div>
                 </form>
     }
 }
