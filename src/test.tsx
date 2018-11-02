@@ -5,20 +5,46 @@ import {observer} from "mobx-react";
 import { allowStateChangesStart } from "mobx/lib/core/action";
 import {onClickInstantSend} from "../src/ews"
 
+class ewsUpdate 
+{
+    // this is a hack to allow the callback from ewsRequest to set variables back into my ButtonBoard2 class
+    @observable private _fSending:boolean = false;
+    @computed public get FSending() : boolean {return this._fSending}
+    @action setSending(inValue:boolean) : void {this._fSending = inValue;}
+}
+
+declare global {
+    interface Window {
+        uiLessHandler: any;
+        timeOut: any; 
+        ewsSend: ewsUpdate;
+    }
+}
+window.ewsSend = new ewsUpdate;
+window.ewsSend.setSending(false);
+
 class Template {
     @observable private _title:string;
     @observable private _body:string;
     @observable private _id:number;
+    @observable private _fDefault:boolean;
 
     constructor(inTitle:string, inBody:string, inId:number) {
         this.updateTitle(inTitle);
         this.updateBody(inBody);
         this.updateId(inId);
+
+        this.updateFDefault(false);
     }
 
     @computed public get Title():string {return this._title;}
     @computed public get Body():string {return this._body;}
     @computed public get Id():number {return this._id;}
+    @computed public get FDefault():boolean {return this._fDefault;}
+
+    @action updateFDefault(inFDefault:boolean) : void {
+        this._fDefault = inFDefault;
+    }
     @action updateTitle(inTitle:string) : void {
         this._title = inTitle;
     }
@@ -51,9 +77,12 @@ class Templates {
     }
 
     @action
-    public addTemplate(inTitle:string, inBody:string) {
+    public addTemplate(inTitle:string, inBody:string) : number {
         this._rgTemplates.push(new Template(inTitle, inBody, this._currentIndex));
+        if (this._currentIndex == 0)
+            this._rgTemplates[0].updateFDefault(true); // Set the first template to be default
         this._currentIndex++;
+        return (this._currentIndex - 1);
     }
 
     @action
@@ -66,6 +95,14 @@ class Templates {
                 break;
             }
         }
+    }
+
+    @action public changeDefault(inButtonId:number)
+    {
+        for (let i = 0; i < this._rgTemplates.length; i++ ) {
+            this._rgTemplates[i].updateFDefault(this._rgTemplates[i].Id == inButtonId);
+        }
+  
     }
 
     @action
@@ -86,6 +123,7 @@ class Templates {
         class tempTemplates{
             Title:string;
             Body:string;
+            Default:boolean;
         };
 
         let myStructure : Array<tempTemplates> = new Array<tempTemplates>(0);
@@ -95,6 +133,8 @@ class Templates {
             let myEntry : tempTemplates = new tempTemplates;
             myEntry.Title = entry.Title;
             myEntry.Body = entry.Body;
+            if (entry.FDefault)
+                myEntry.Default = true;
             
             myStructure.push(myEntry);
         }
@@ -139,6 +179,7 @@ let myGlobalSettings : GlobalSettings = new GlobalSettings;
 function saveToApplicationSettings(templatesToSave:Templates)
 {
     let jsonString:string = templatesToSave.dumpJson();
+ //   console.log(templatesToSave.dumpJson());
     Office.context.roamingSettings.set("templates", jsonString);
     Office.context.roamingSettings.saveAsync();
 }
@@ -171,7 +212,11 @@ function LoadTemplatesFromString(stringIn:string)
     
     for (let i : number = 0; i < jsonTemplates.length; i++)
         {
-            tempTemplates.addTemplate(jsonTemplates[i].Title, jsonTemplates[i].Body);
+            var id = tempTemplates.addTemplate(jsonTemplates[i].Title, jsonTemplates[i].Body);
+            if (jsonTemplates[i].Default != undefined && jsonTemplates[i].Default == true)
+            {
+                tempTemplates.changeDefault(id);
+            }
         }
     myTemplates.updateTemplates(tempTemplates);
 }
@@ -184,7 +229,7 @@ function ItemChanged(eventArgs:any)
 }
 
 Office.initialize = () => {
-    //Office.context.mailbox.addHandlerAsync(Office.EventType.ItemChanged, ItemChanged);
+    Office.context.mailbox.addHandlerAsync(Office.EventType.ItemChanged, ItemChanged);
     UpdateTemplates();
     myGlobalSettings.loadFromSettings();
 }
@@ -238,12 +283,17 @@ class ButtonBoard2 extends React.Component<ButtonBoard2Props, undefined> {
 
     }
 
-    handleClick(button:Template) {
-        console.log(myTemplates.dumpJson());
+    // Called back when the ewsCall has finished for Instant Send
+    ewsFinish()
+    {
+        window.ewsSend.setSending(false);
+    }
 
+    handleClick(button:Template) {
         if (myGlobalSettings.FEditResponse == false)
         {
-            onClickInstantSend((Office.context.mailbox.item as Office.MessageRead).itemId, button.Body, myGlobalSettings.FReplyAll);
+            window.ewsSend.setSending(true);
+            onClickInstantSend((Office.context.mailbox.item as Office.MessageRead).itemId, button.Body, myGlobalSettings.FReplyAll, this.ewsFinish);
         }
         else
         {
@@ -279,16 +329,23 @@ class ButtonBoard2 extends React.Component<ButtonBoard2Props, undefined> {
     }
 
     render() {
-        return (
-        <div className="buttonBoard"><div>{myTemplates.Data.map(button  => {
-            var myString = button.Title;
-            return <SquareButton onClick={() => this.handleClick(button)} value={myString} onClickEdit={() => this.handleEditTemplateClick(button)} />
-        })}</div>
-        <div>{this.renderCheckbox("Reply All", myGlobalSettings.FReplyAll, () => this.handleReplyAllClick())}</div>
-        <div>{this.renderCheckbox("Edit Response", myGlobalSettings.FEditResponse, () => this.handleEditResponseClick()) }</div> 
-        <button onClick={() => this.handleNewTemplate()}className="newTemplateButton">Add New Template</button>
-        </div>
-        )
+        if (window.ewsSend.FSending)  {
+            return (<div className="loaderHolder"><div className="loader"></div>Sending...</div>)
+        }
+        else {
+            return (
+            <div className="buttonBoard"><div>{myTemplates.Data.map(button  => {
+                var myString = button.Title;
+                if (button.FDefault) 
+                    myString += "*";
+                return <SquareButton onClick={() => this.handleClick(button)} value={myString} onClickEdit={() => this.handleEditTemplateClick(button)} />
+            })}</div>
+            <div>{this.renderCheckbox("Reply All", myGlobalSettings.FReplyAll, () => this.handleReplyAllClick())}</div>
+            <div>{this.renderCheckbox("Edit Response", myGlobalSettings.FEditResponse, () => this.handleEditResponseClick()) }</div> 
+            <button onClick={() => this.handleNewTemplate()}className="newTemplateButton">Add New Template</button>
+            </div>
+            )
+        }
     }
 }
 
@@ -317,6 +374,7 @@ class EditTemplateForm extends React.Component<EditTemplateFormProps, EditTempla
         this.handleSubmit = this.handleSubmit.bind(this);
         this.handleDiscard = this.handleDiscard.bind(this);
         this.handleDelete = this.handleDelete.bind(this);
+        this.handleDefault = this.handleDefault.bind(this);
       }
 
       handleChange(event:any) {
@@ -365,6 +423,11 @@ class EditTemplateForm extends React.Component<EditTemplateFormProps, EditTempla
         this.props.parentPageManager.backToMain();
       }
 
+      handleDefault() {
+        myTemplates.changeDefault(this.props.templateToEdit.Id);
+        saveToApplicationSettings(myTemplates);
+      }
+
     render()
     {
         return  <div><form onSubmit={this.handleSubmit}>
@@ -377,6 +440,9 @@ class EditTemplateForm extends React.Component<EditTemplateFormProps, EditTempla
                 </form>
                 <button className="editTemplateButton" onClick={this.handleDiscard} name="discard">Discard</button>
                 { this.props.templateToEdit != null ? <button className="editTemplateButton" onClick ={this.handleDelete} name="delete">Delete</button> : null }
+                { (this.props.templateToEdit == null) ? null : (this.props.templateToEdit.FDefault) ? 
+                <button className="editTemplateButtonDefault" name = "default">Currently Default</button> : 
+                <button className="editTemplateButton" onClick={this.handleDefault} name = "default">Make Default</button>}
                 </div>
     }
 }
@@ -427,16 +493,28 @@ ReactDOM.render(
 
 
 
-declare global {
-    interface Window {
-        uiLessHandler: any;
-        timeOut: any;
-    }
-    }
+
 
 window.uiLessHandler = function uiLessHandler(eventArgs:any)
 {
-    (Office.context.mailbox.item as Office.MessageRead).displayReplyAllForm(myTemplates.Data[0].Body);
+    UpdateTemplates();
+    myGlobalSettings.loadFromSettings();
+    var defaultBody = "";
+
+    for (var i = 0; i < myTemplates.Data.length; i++)
+    {
+        if (myTemplates.Data[i].FDefault){
+            defaultBody = myTemplates.Data[i].Body;
+            break;
+        }
+    }
+    if (myGlobalSettings.FReplyAll == true) {
+        (Office.context.mailbox.item as Office.MessageRead).displayReplyAllForm(defaultBody);
+    }
+    else {
+        (Office.context.mailbox.item as Office.MessageRead).displayReplyForm(defaultBody);
+    }
+
     setTimeout(function() {window.timeOut(eventArgs)}, 500);
 }
 

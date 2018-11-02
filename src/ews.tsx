@@ -1,7 +1,9 @@
 
 function dummyCallback(asyncResult:Office.AsyncResult)
 {
-    console.log(JSON.stringify(asyncResult));
+	console.log(JSON.stringify(asyncResult));
+	
+	asyncResult.asyncContext.callback();
 }
 
 function ewsInstantSend(id:string, changekey:string, body:string, fReplyAll:boolean):string
@@ -33,13 +35,13 @@ function ewsInstantSend(id:string, changekey:string, body:string, fReplyAll:bool
 	return result;
 }
 
-export function onClickInstantSend(itemId:string, bodyText:string, fReplyAll:boolean) 
+export function onClickInstantSend(itemId:string, bodyText:string, fReplyAll:boolean, callback:any) 
 {
 	var getItemRequestString;
 
 	getItemRequestString = getItemRequest(itemId);
 
-	Office.context.mailbox.makeEwsRequestAsync(getItemRequestString, getItemCallback, {"body":bodyText, "itemId":itemId, "fReplyAll":fReplyAll});
+	Office.context.mailbox.makeEwsRequestAsync(getItemRequestString, getItemCallback, {"body":bodyText, "itemId":itemId, "fReplyAll":fReplyAll, "callback":callback});
 }
 
 function getItemCallback(obj:Office.AsyncResult)
@@ -50,7 +52,7 @@ function getItemCallback(obj:Office.AsyncResult)
     bodyString = bodyString.replace(/</g,"&lt;").replace(/>/g,"&gt;");
 
     let ewsString:string = ewsInstantSend(obj.asyncContext.itemId, changeKey, bodyString, obj.asyncContext.fReplyAll);
-    Office.context.mailbox.makeEwsRequestAsync(ewsString, dummyCallback);
+    Office.context.mailbox.makeEwsRequestAsync(ewsString, dummyCallback, obj.asyncContext);
 
     return false;
 }
