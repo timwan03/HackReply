@@ -178,7 +178,13 @@ function LoadTemplatesFromString(stringIn:string)
 
 LoadTemplatesFromString("[{\"Title\":\"Loading...\", \"Body\":\"Body\"}, {\"Title\":\"Loading...\", \"Body\":\"Body\"}]");
 
+function ItemChanged(eventArgs:any)
+{
+    // Do nothing here.
+}
+
 Office.initialize = () => {
+    Office.context.mailbox.addHandlerAsync(Office.EventType.ItemChanged, ItemChanged);
     //myInfo.updateName((Office.context.mailbox.item as Office.MessageRead).subject);
     UpdateTemplates();
     myGlobalSettings.loadFromSettings();
