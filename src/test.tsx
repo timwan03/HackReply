@@ -103,9 +103,38 @@ class Templates {
     }
 }
 
-let myTemplates : Templates = new Templates;
 
-let g_fEditResponse : boolean = true;
+class GlobalSettings
+{
+    @observable private _fReplyAll:boolean = false;
+    @computed public get FReplyAll() : boolean {return this._fReplyAll}
+    @action setReplyAll(inValue:boolean) : void {this._fReplyAll = inValue; this.saveToApplicationSettings();}
+
+    @observable private _fEditResponse:boolean = true;
+    @computed public get FEditResponse() : boolean {return this._fEditResponse; }
+    @action setEditResponse(inValue:boolean) : void {this._fEditResponse = inValue;this.saveToApplicationSettings();}
+
+    @action loadFromSettings()
+    {
+        var savedEditResponse = Office.context.roamingSettings.get("er2");
+        var savedReplyAll = Office.context.roamingSettings.get("ra");
+
+        if (savedEditResponse !== undefined)
+            this._fEditResponse = savedEditResponse;
+        
+        if (savedReplyAll !== undefined)
+            this._fReplyAll = savedReplyAll;
+    }
+    @action saveToApplicationSettings() 
+    {
+        Office.context.roamingSettings.set("er2", this._fEditResponse);
+        Office.context.roamingSettings.set("ra", this._fReplyAll);
+        Office.context.roamingSettings.saveAsync();
+    }
+}
+
+let myTemplates : Templates = new Templates;
+let myGlobalSettings : GlobalSettings = new GlobalSettings;
 
 function saveToApplicationSettings(templatesToSave:Templates)
 {
@@ -152,11 +181,7 @@ LoadTemplatesFromString("[{\"Title\":\"Loading...\", \"Body\":\"Body\"}, {\"Titl
 Office.initialize = () => {
     //myInfo.updateName((Office.context.mailbox.item as Office.MessageRead).subject);
     UpdateTemplates();
-
-    const node = ReactDOM.findDOMNode(this);
-    if (node instanceof HTMLElement) {
-        const child = node.querySelector('.buttonBoard')
-    }
+    myGlobalSettings.loadFromSettings();
 }
 
 export interface SquareButtonProps { value: string; onClick: any; onClickEdit: any;}
@@ -189,18 +214,6 @@ class Checkbox2 extends React.Component<Checkbox2Props, undefined>
     }
 }
 
-/*
-export interface ButtonBoardProps {buttons: Array<Template>}
-@observer
-class ButtonBoard extends React.Component<ButtonBoardProps, undefined> {
-    render() {
-        return (
-            <div className="buttonBoard">{this.props.buttons.map(button  => <SquareButton value={button.Title} />)}</div>
-        )
-    }
-}
-*/
-
 function saveReplyAllSetting(newSetting:boolean)
 {
     Office.context.roamingSettings.set("replyall", newSetting);
@@ -210,13 +223,10 @@ function saveReplyAllSetting(newSetting:boolean)
 export interface ButtonBoard2Props {inPageManager:PageManager;}
 @observer
 class ButtonBoard2 extends React.Component<ButtonBoard2Props, undefined> {
-    @observable _isReplyAll:boolean;
-    @observable _editResponse:boolean
+    
     constructor()
     {
         super();
-        this._isReplyAll = false;
-        this._editResponse = true;
     }
 
     quickReply(button:Template) {
@@ -224,19 +234,18 @@ class ButtonBoard2 extends React.Component<ButtonBoard2Props, undefined> {
     }
 
     handleClick(button:Template) {
-        //myTemplates.changeTemplate(button.Id);
         console.log(myTemplates.dumpJson());
 
-        if (this._editResponse == false)
+        if (myGlobalSettings.FEditResponse == false)
         {
-            onClickInstantSend((Office.context.mailbox.item as Office.MessageRead).itemId, button.Body, this._isReplyAll);
+            onClickInstantSend((Office.context.mailbox.item as Office.MessageRead).itemId, button.Body, myGlobalSettings.FReplyAll);
         }
         else
         {
-        if (this._isReplyAll)
-            (Office.context.mailbox.item as Office.MessageRead).displayReplyAllForm(button.Body)
-        else
-            (Office.context.mailbox.item as Office.MessageRead).displayReplyForm(button.Body)
+            if (myGlobalSettings.FReplyAll)
+                (Office.context.mailbox.item as Office.MessageRead).displayReplyAllForm(button.Body)
+            else
+                (Office.context.mailbox.item as Office.MessageRead).displayReplyForm(button.Body)
         }
 
     }
@@ -247,12 +256,12 @@ class ButtonBoard2 extends React.Component<ButtonBoard2Props, undefined> {
 
     handleReplyAllClick()
     {
-        this._isReplyAll = !this._isReplyAll;
+        myGlobalSettings.setReplyAll(!myGlobalSettings.FReplyAll);
     }
 
     handleEditResponseClick()
     {
-        this._editResponse = !this._editResponse;
+        myGlobalSettings.setEditResponse(!myGlobalSettings.FEditResponse);
     }
 
     renderCheckbox(buttonText:string, checked:boolean, clickHandler:any){
@@ -270,8 +279,8 @@ class ButtonBoard2 extends React.Component<ButtonBoard2Props, undefined> {
             var myString = button.Title;
             return <SquareButton onClick={() => this.handleClick(button)} value={myString} onClickEdit={() => this.handleEditTemplateClick(button)} />
         })}</div>
-        <div>{this.renderCheckbox("Reply All", this._isReplyAll, () => this.handleReplyAllClick())}</div>
-        <div>{this.renderCheckbox("Edit Response", this._editResponse, () => this.handleEditResponseClick()) }</div> 
+        <div>{this.renderCheckbox("Reply All", myGlobalSettings.FReplyAll, () => this.handleReplyAllClick())}</div>
+        <div>{this.renderCheckbox("Edit Response", myGlobalSettings.FEditResponse, () => this.handleEditResponseClick()) }</div> 
         <button onClick={() => this.handleNewTemplate()}className="newTemplateButton">Add New Template</button>
         </div>
         )
@@ -410,17 +419,3 @@ ReactDOM.render(
     (<PageManager  />),
         document.getElementById("app")
 );
-
-/*
-ReactDOM.render(
-    (<ButtonBoard buttons={myTemplates.Data} />),
-        document.getElementById("app")
-);
-
-
-/*
-ReactDOM.render(
-    (<SquareButton value="Robot Chicken Hello World"/>),
-        document.getElementById("app")
-        );
-*/
