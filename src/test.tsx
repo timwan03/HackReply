@@ -184,8 +184,7 @@ function ItemChanged(eventArgs:any)
 }
 
 Office.initialize = () => {
-    Office.context.mailbox.addHandlerAsync(Office.EventType.ItemChanged, ItemChanged);
-    //myInfo.updateName((Office.context.mailbox.item as Office.MessageRead).subject);
+    //Office.context.mailbox.addHandlerAsync(Office.EventType.ItemChanged, ItemChanged);
     UpdateTemplates();
     myGlobalSettings.loadFromSettings();
 }
@@ -425,3 +424,23 @@ ReactDOM.render(
     (<PageManager  />),
         document.getElementById("app")
 );
+
+
+
+declare global {
+    interface Window {
+        uiLessHandler: any;
+        timeOut: any;
+    }
+    }
+
+window.uiLessHandler = function uiLessHandler(eventArgs:any)
+{
+    (Office.context.mailbox.item as Office.MessageRead).displayReplyAllForm(myTemplates.Data[0].Body);
+    setTimeout(function() {window.timeOut(eventArgs)}, 500);
+}
+
+window.timeOut = function timeOut(eventArgs:any)
+{
+    eventArgs.completed(true); 
+}

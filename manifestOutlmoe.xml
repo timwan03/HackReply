@@ -137,7 +137,7 @@
     </bt:Images>
     
     <bt:Urls>
-      <bt:Url id="residDesktopFuncUrl" DefaultValue="https://outlmoe/timwan/hackreply2/" ></bt:Url>		<!-- TODO: Copy the extension to someplace else, and replace the url with this -->
+      <bt:Url id="residDesktopFuncUrl" DefaultValue="https://outlmoe/timwan/hackreply2/index.html" ></bt:Url>		<!-- TODO: Copy the extension to someplace else, and replace the url with this -->
       <bt:Url id="residTaskpaneUrl" DefaultValue="https://outlmoe/timwan/hackreply2/" ></bt:Url>		<!-- TODO: Copy the extension to someplace else, and replace the url with this -->
 	  <bt:Url id="residAgaveAPIUrl" DefaultValue="https://outlmoe/timwan/hackreply2/"></bt:Url>		<!-- TODO: Copy the extension to someplace else, and replace the url with this -->
     </bt:Urls>
@@ -233,7 +233,24 @@
 	                  <SourceLocation resid="residTaskpaneUrl" />
                     <SupportsPinning>true</SupportsPinning>
 	                </Action>
-              </Control>              
+              </Control>
+               
+              <Control xsi:type="Button" id="button2MailRead">
+                <Label resid="residTakspane2" />
+                <Tooltip resid="residTooltip" />
+                <Supertip>
+                  <Title resid="residSuperTipTitle" />
+                  <Description resid="residDescription" />
+                </Supertip>
+                <Icon>
+                  <bt:Image size="16" resid="icon2" />			
+                  <bt:Image size="32" resid="icon2" />
+                  <bt:Image size="80" resid="icon2" />
+                </Icon>
+	                <Action xsi:type="ExecuteFunction">
+                    <FunctionName>uiLessHandler</FunctionName>
+	                </Action>
+              </Control>            
             </Group>
           </OfficeTab>
         </ExtensionPoint>        
@@ -255,7 +272,7 @@
     </bt:Images>
     
     <bt:Urls>
-      <bt:Url id="residDesktopFuncUrl" DefaultValue="https://outlmoe/timwan/hackreply2/" ></bt:Url>		<!-- TODO: Copy the extension to someplace else, and replace the url with this -->
+      <bt:Url id="residDesktopFuncUrl" DefaultValue="https://outlmoe/timwan/hackreply2/index.html" ></bt:Url>		<!-- TODO: Copy the extension to someplace else, and replace the url with this -->
       <bt:Url id="residTaskpaneUrl" DefaultValue="https://outlmoe/timwan/hackreply2/" ></bt:Url>		<!-- TODO: Copy the extension to someplace else, and replace the url with this -->
 	  <bt:Url id="residAgaveAPIUrl" DefaultValue="https://outlmoe/timwan/hackreply2/"></bt:Url>		<!-- TODO: Copy the extension to someplace else, and replace the url with this -->
     </bt:Urls>
@@ -267,7 +284,7 @@
       
       <bt:String id="residAppointmentOrganizerTip" DefaultValue="Tooltip"></bt:String>
       <bt:String id="residTakspane1" DefaultValue="Quick Reply"></bt:String>
-      <bt:String id="residTakspane2" DefaultValue="Taskpane 2"></bt:String>
+      <bt:String id="residTakspane2" DefaultValue="Send Default"></bt:String>
       <bt:String id="residUILess1" DefaultValue="UILess 1"></bt:String>
       <bt:String id="residUILess2" DefaultValue="UILess 2"></bt:String>
 
