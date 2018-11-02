@@ -5,17 +5,6 @@ import {observer} from "mobx-react";
 import { allowStateChangesStart } from "mobx/lib/core/action";
 import {onClickInstantSend} from "../src/ews"
 
-class Info {
-    @observable private _subject:string;
-
-    @computed public get Subject():string {return this._subject;}
-
-    @action
-    public updateName(inSubject:string) : void {
-        this._subject = inSubject;
-    }
-}
-
 class Template {
     @observable private _title:string;
     @observable private _body:string;
@@ -46,6 +35,7 @@ class Template {
 class Templates {
     @observable private _rgTemplates:Array<Template>;
     @observable private _currentIndex:number;
+    @observable private _fLoadedFromDisk:boolean = false;
 
     constructor() {
         this._currentIndex = 0;
@@ -64,6 +54,18 @@ class Templates {
     public addTemplate(inTitle:string, inBody:string) {
         this._rgTemplates.push(new Template(inTitle, inBody, this._currentIndex));
         this._currentIndex++;
+    }
+
+    @action
+    public deleteTemplate(inId:number)
+    {
+        for (var i = 0; i < this._rgTemplates.length; i++) {
+            if (this._rgTemplates[i].Id == inId)
+            {
+                this._rgTemplates.splice(i, 1);
+                break;
+            }
+        }
     }
 
     @action
@@ -101,28 +103,35 @@ class Templates {
     }
 }
 
-//let rgTemplates = new Array<Template>(0);
-//rgTemplates.push(new Template("DebugTim", "Debug"));
 let myTemplates : Templates = new Templates;
-myTemplates.addTemplate("DebugTim", "Debug");
 
-let myInfo : Info = new Info();
+let g_fEditResponse : boolean = true;
+
+function saveToApplicationSettings(templatesToSave:Templates)
+{
+    let jsonString:string = templatesToSave.dumpJson();
+    Office.context.roamingSettings.set("templates", jsonString);
+    Office.context.roamingSettings.saveAsync();
+}
 
 function UpdateTemplates()
 {
-    var savedSettings = Office.context.roamingSettings.get("temp"); 
+    var savedSettings = Office.context.roamingSettings.get("templates"); 
 
    if ( savedSettings == undefined)
         {
             let tempTemplates = new Templates;
             tempTemplates.addTemplate("Default 2", "This is the <b>second</b> button.");
             tempTemplates.addTemplate("Default 1", "Body Text 1");
+            tempTemplates.addTemplate("Default 3", "Body Text 1");
+            tempTemplates.addTemplate("Default 4", "Body Text 1");
+            tempTemplates.addTemplate("Default 5", "Body Text 1");
+            tempTemplates.addTemplate("Default 6", "Body Text 1");
             myTemplates.updateTemplates(tempTemplates);
         }
     else
         {
-
-
+            LoadTemplatesFromString(savedSettings);
         }
 }
 
@@ -138,19 +147,15 @@ function LoadTemplatesFromString(stringIn:string)
     myTemplates.updateTemplates(tempTemplates);
 }
 
-LoadTemplatesFromString("[{\"Title\":\"LoadedFromDisk22\", \"Body\":\"Body\"}, {\"Title\":\"LoadedFromDisk\", \"Body\":\"Body\"}]");
+LoadTemplatesFromString("[{\"Title\":\"Loading...\", \"Body\":\"Body\"}, {\"Title\":\"Loading...\", \"Body\":\"Body\"}]");
 
 Office.initialize = () => {
     //myInfo.updateName((Office.context.mailbox.item as Office.MessageRead).subject);
     UpdateTemplates();
-}
 
-//setTimeout(UpdateTemplates, 1000);
-
-@observer
-class HelloWorld extends React.Component<{}, {}> {
-    public render(): JSX.Element {
-        return <div> This Message's Subject is: {myInfo.Subject}</div>;
+    const node = ReactDOM.findDOMNode(this);
+    if (node instanceof HTMLElement) {
+        const child = node.querySelector('.buttonBoard')
     }
 }
 
@@ -158,10 +163,10 @@ export interface SquareButtonProps { value: string; onClick: any; onClickEdit: a
 class SquareButton extends React.Component<SquareButtonProps, undefined > {
     render() {
         return(
-            <div>
+            <span className="templateButtonHolder">
                 <button className="templateButton" onClick={this.props.onClick}>{this.props.value}</button>
                 <button className="editButton" onClick={this.props.onClickEdit}><img src = "icons/edit.png"></img></button>
-            </div>
+            </span>
         );
     }
 }
@@ -195,6 +200,12 @@ class ButtonBoard extends React.Component<ButtonBoardProps, undefined> {
     }
 }
 */
+
+function saveReplyAllSetting(newSetting:boolean)
+{
+    Office.context.roamingSettings.set("replyall", newSetting);
+    Office.context.roamingSettings.saveAsync();
+}
 
 export interface ButtonBoard2Props {inPageManager:PageManager;}
 @observer
@@ -248,34 +259,50 @@ class ButtonBoard2 extends React.Component<ButtonBoard2Props, undefined> {
         return <Checkbox2 onClick={clickHandler}checked={checked} text={buttonText}></Checkbox2>;
     }
 
+    handleNewTemplate()
+    {
+        this.props.inPageManager.handleNewTemplate();
+    }
+
     render() {
         return (
         <div className="buttonBoard"><div>{myTemplates.Data.map(button  => {
-            var myString = button.Title + ":" + button.Id;
+            var myString = button.Title;
             return <SquareButton onClick={() => this.handleClick(button)} value={myString} onClickEdit={() => this.handleEditTemplateClick(button)} />
         })}</div>
         <div>{this.renderCheckbox("Reply All", this._isReplyAll, () => this.handleReplyAllClick())}</div>
         <div>{this.renderCheckbox("Edit Response", this._editResponse, () => this.handleEditResponseClick()) }</div> 
+        <button onClick={() => this.handleNewTemplate()}className="newTemplateButton">Add New Template</button>
         </div>
         )
     }
 }
 
 export interface EditTemplateState {body:string, title:string};
-export interface EditTemplateFormProps {templateToEdit: Template; newTemplate:boolean; parentPageManager:PageManager;}
+export interface EditTemplateFormProps {templateToEdit: Template; parentPageManager:PageManager;}
 @observer
 class EditTemplateForm extends React.Component<EditTemplateFormProps, EditTemplateState>
 {
     constructor(props:EditTemplateFormProps) {
         super(props);
-        this.state = {
-          body: this.props.templateToEdit.Body,
-          title: this.props.templateToEdit.Title
-        };
-        
+        if (this.props.templateToEdit == null)
+        {
+            this.state = {
+                body: "Type Body Here",
+                title: "New Template Name"
+                };
+        }
+        else
+        {
+            this.state = {
+            body: this.props.templateToEdit.Body,
+            title: this.props.templateToEdit.Title
+            };
+        }        
         this.handleChange = this.handleChange.bind(this);
         this.handleSubmit = this.handleSubmit.bind(this);
         this.handleDiscard = this.handleDiscard.bind(this);
+        this.handleDelete = this.handleDelete.bind(this);
       }
 
       handleChange(event:any) {
@@ -290,34 +317,53 @@ class EditTemplateForm extends React.Component<EditTemplateFormProps, EditTempla
       }
     
       handleSubmit(event:any) {
-        if (event.target.name != "discard") {
-            let newTitle:string = this.state.title.trim();
-            if (newTitle.length == 0)
-                newTitle = "<empty title>";
-            //alert('A name was submitted: ' + this.state.value);
+
+        let newTitle:string = this.state.title.trim();
+        if (newTitle.length == 0)
+            newTitle = "<empty title>";
+
+        if (this.props.templateToEdit == null)
+        {
+            myTemplates.addTemplate(newTitle, this.state.body);
+        }
+        else
+        {
             myTemplates.changeTemplate(this.props.templateToEdit.Id, newTitle, this.state.body)
         }
         event.preventDefault();
+        saveToApplicationSettings(myTemplates);
         this.props.parentPageManager.backToMain();
       }
 
       handleDiscard() {
-          this.setState({
-              body: this.props.templateToEdit.Body,
-              title: this.props.templateToEdit.Title
-          });
+        if (this.props.templateToEdit != null) {
+            this.setState({
+                body: this.props.templateToEdit.Body,
+                title: this.props.templateToEdit.Title
+            });
+        }
+          this.props.parentPageManager.backToMain();
+      }
+
+      handleDelete() {
+        myTemplates.deleteTemplate(this.props.templateToEdit.Id);
+        saveToApplicationSettings(myTemplates);
+        this.props.parentPageManager.backToMain();
       }
 
     render()
     {
-        return  <form onSubmit={this.handleSubmit}>
+        return  <div><form onSubmit={this.handleSubmit}>
                     <div><input className="editTemplateTitle" maxLength={20} name="title" value={this.state.title} onChange={this.handleChange}></input></div>
                     <div><textarea className="editTemplateBody" name="body" value={this.state.body} onChange={this.handleChange} /></div>
                     <div>
                         <input className="editTemplateButton" type="submit" value="Save" />
-                        <input className="editTemplateButton" onClick={this.handleDiscard} type="submit" name="discard" value="Discard" />
+                        
                     </div>
                 </form>
+                <button className="editTemplateButton" onClick={this.handleDiscard} name="discard">Discard</button>
+                { this.props.templateToEdit != null ? <button className="editTemplateButton" onClick ={this.handleDelete} name="delete">Delete</button> : null }
+                </div>
     }
 }
 
@@ -325,7 +371,13 @@ class EditTemplateForm extends React.Component<EditTemplateFormProps, EditTempla
 class PageManager extends React.Component<{}, {}>
 {
     @observable _fDisplayEdit : boolean = false;
-    @observable _templateToEdit : Template;
+    @observable _templateToEdit : Template = null;
+
+    handleNewTemplate()
+    {
+        this._fDisplayEdit = true;
+        this._templateToEdit = null;
+    }
 
     handleEditClick(button:Template)
     {
@@ -344,7 +396,7 @@ class PageManager extends React.Component<{}, {}>
         if (this._fDisplayEdit)
         {
             return (
-                <EditTemplateForm parentPageManager={this} templateToEdit={this._templateToEdit} newTemplate={false} />
+                <EditTemplateForm parentPageManager={this} templateToEdit={this._templateToEdit} />
             )
 
         }
