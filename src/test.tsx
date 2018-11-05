@@ -5,23 +5,7 @@ import {observer} from "mobx-react";
 import { allowStateChangesStart } from "mobx/lib/core/action";
 import {onClickInstantSend} from "../src/ews"
 
-class ewsUpdate 
-{
-    // this is a hack to allow the callback from ewsRequest to set variables back into my ButtonBoard2 class
-    @observable private _fSending:boolean = false;
-    @computed public get FSending() : boolean {return this._fSending}
-    @action setSending(inValue:boolean) : void {this._fSending = inValue;}
-}
 
-declare global {
-    interface Window {
-        uiLessHandler: any;
-        timeOut: any; 
-        ewsSend: ewsUpdate;
-    }
-}
-window.ewsSend = new ewsUpdate;
-window.ewsSend.setSending(false);
 
 class Template {
     @observable private _title:string;
@@ -228,11 +212,40 @@ function ItemChanged(eventArgs:any)
     // Do nothing here.
 }
 
+var g_fIsCompose : boolean = false;
+
 Office.initialize = () => {
     Office.context.mailbox.addHandlerAsync(Office.EventType.ItemChanged, ItemChanged);
+
+
+    var myItem : any;
+    myItem = Office.context.mailbox.item;
+    if (myItem.subject.getAsync != undefined)
+    {
+        g_fIsCompose = true;
+    }
     UpdateTemplates();
     myGlobalSettings.loadFromSettings();
+
 }
+
+class ewsUpdate 
+{
+    // this is a hack to allow the callback from ewsRequest to set variables back into my ButtonBoard2 class
+    @observable private _fSending:boolean = false;
+    @computed public get FSending() : boolean {return this._fSending}
+    @action setSending(inValue:boolean) : void {this._fSending = inValue;}
+}
+
+declare global {
+    interface Window {
+        uiLessHandler: any;
+        timeOut: any; 
+        ewsSend: ewsUpdate;
+    }
+}
+window.ewsSend = new ewsUpdate;
+window.ewsSend.setSending(false);
 
 export interface SquareButtonProps { value: string; onClick: any; onClickEdit: any;}
 class SquareButton extends React.Component<SquareButtonProps, undefined > {
@@ -290,19 +303,28 @@ class ButtonBoard2 extends React.Component<ButtonBoard2Props, undefined> {
     }
 
     handleClick(button:Template) {
-        if (myGlobalSettings.FEditResponse == false)
-        {
-            window.ewsSend.setSending(true);
-            onClickInstantSend((Office.context.mailbox.item as Office.MessageRead).itemId, button.Body, myGlobalSettings.FReplyAll, this.ewsFinish);
-        }
-        else
-        {
-            if (myGlobalSettings.FReplyAll)
-                (Office.context.mailbox.item as Office.MessageRead).displayReplyAllForm(button.Body)
-            else
-                (Office.context.mailbox.item as Office.MessageRead).displayReplyForm(button.Body)
-        }
 
+        if (g_fIsCompose)
+        {
+            (Office.context.mailbox.item as Office.MessageCompose).body.setSelectedDataAsync(button.Body, 	{
+                "coercionType" : Office.CoercionType.Html
+            });
+        }
+        else {
+
+            if (myGlobalSettings.FEditResponse == false)
+            {
+                window.ewsSend.setSending(true);
+                onClickInstantSend((Office.context.mailbox.item as Office.MessageRead).itemId, button.Body, myGlobalSettings.FReplyAll, this.ewsFinish);
+            }
+            else
+            {
+                if (myGlobalSettings.FReplyAll)
+                    (Office.context.mailbox.item as Office.MessageRead).displayReplyAllForm(button.Body)
+                else
+                    (Office.context.mailbox.item as Office.MessageRead).displayReplyForm(button.Body)
+            }
+        }
     }
 
     handleEditTemplateClick(button:Template) {
@@ -340,9 +362,9 @@ class ButtonBoard2 extends React.Component<ButtonBoard2Props, undefined> {
                     myString += "*";
                 return <SquareButton onClick={() => this.handleClick(button)} value={myString} onClickEdit={() => this.handleEditTemplateClick(button)} />
             })}</div>
-            <div>{this.renderCheckbox("Reply All", myGlobalSettings.FReplyAll, () => this.handleReplyAllClick())}</div>
-            <div>{this.renderCheckbox("Edit Response", myGlobalSettings.FEditResponse, () => this.handleEditResponseClick()) }</div> 
-            <button onClick={() => this.handleNewTemplate()}className="newTemplateButton">Add New Template</button>
+            <div>{g_fIsCompose ? null : this.renderCheckbox("Reply All", myGlobalSettings.FReplyAll, () => this.handleReplyAllClick())}</div>
+            <div>{g_fIsCompose ? null : this.renderCheckbox("Edit Response", myGlobalSettings.FEditResponse, () => this.handleEditResponseClick()) }</div> 
+            <div><button onClick={() => this.handleNewTemplate()}className="newTemplateButton">Add New Template</button></div>
             </div>
             )
         }
