@@ -362,8 +362,8 @@ class ButtonBoard2 extends React.Component<ButtonBoard2Props, undefined> {
                     myString += "*";
                 return <SquareButton onClick={() => this.handleClick(button)} value={myString} onClickEdit={() => this.handleEditTemplateClick(button)} />
             })}</div>
-            <div>{g_fIsCompose ? null : this.renderCheckbox("Reply All", myGlobalSettings.FReplyAll, () => this.handleReplyAllClick())}</div>
-            <div>{g_fIsCompose ? null : this.renderCheckbox("Edit Response", myGlobalSettings.FEditResponse, () => this.handleEditResponseClick()) }</div> 
+            <div>{g_fIsCompose ? <div className="checkBoxContainer"></div> : this.renderCheckbox("Reply All", myGlobalSettings.FReplyAll, () => this.handleReplyAllClick())}</div>
+            <div>{g_fIsCompose ? <div className="checkBoxContainer"></div> : this.renderCheckbox("Edit Response", myGlobalSettings.FEditResponse, () => this.handleEditResponseClick()) }</div> 
             <div><button onClick={() => this.handleNewTemplate()}className="newTemplateButton">Add New Template</button></div>
             </div>
             )
